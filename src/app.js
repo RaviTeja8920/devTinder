@@ -1,30 +1,35 @@
 const express = require("express");
-const { adminAuth, userAuth } = require("./middlewares/auth");
+const { connectDB } = require("./config/database");
+const User = require("./models/user");
 
 const app = express();
 
-app.use("/admin", adminAuth);
+app.post("/signup", async (req, res) => {
+  const userObj = {
+    firstName: "Virat",
+    lastName: "Kohli",
+    email: "virat@Kohli.com",
+    password: "virat",
+    age: 38,
+    gender: "m",
+  };
 
-app.get("/admin/getAllData", (req, res) => {
-  console.log("All user Data");
-  res.send("here is the All Admins data");
+  const user = new User(userObj);
+  try {
+    await user.save();
+    res.send("user added sucessfully");
+  } catch (err) {
+    res.status(400).send("Error saving the user", +err.message);
+  }
 });
 
-app.get("/admin/getData", (req, res) => {
-  console.log("user Data");
-  res.send("here is the admin data");
-});
-
-app.use("/user/login", (req, res) => {
-  console.log(" user loggedin ");
-  res.send("user loggedin ");
-});
-
-app.use("/user", userAuth, (req, res) => {
-  console.log("Got user data");
-  res.send("Recived user Data");
-});
-
-app.listen(7777, () => {
-  console.log("Server started listerning in port:7777");
-});
+connectDB()
+  .then(() => {
+    console.log("DB connection Sucessful");
+    app.listen(7777, () => {
+      console.log("Server started listerning in port:7777");
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection not sucessful", err);
+  });
