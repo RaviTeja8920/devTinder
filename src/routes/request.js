@@ -2,6 +2,7 @@ const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
+const mongoose = require("mongoose");
 
 const requestRouter = express.Router();
 
@@ -57,6 +58,52 @@ requestRouter.post(
       res.send(user.firstName + " sent Connection request");
     } catch (err) {
       res.status(400).send("ERROR:" + err.message);
+    }
+  }
+);
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const status = req.params.status;
+      const requestId = req.params.requestId;
+      const loggedInUser = req.user;
+
+      const allowedStatuses = ["accepted", "rejected"];
+
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).send("Invalid Status");
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(requestId)) {
+        return res.status(400).send("invalid requestId");
+      }
+
+      const existingConnectionRequest = await ConnectionRequest.findById(
+        requestId
+      );
+
+      if (
+        !existingConnectionRequest ||
+        !existingConnectionRequest.toUserId.equals(
+          loggedInUser._id || existingConnectionRequest.status === "ignored"
+        )
+      ) {
+        return res.status(404).send("There is no Valid Connection request");
+      }
+
+      existingConnectionRequest.status = status;
+
+      const data = await existingConnectionRequest.save();
+
+      res.json({
+        message: `Connection request ${status}`,
+        data,
+      });
+    } catch (err) {
+      res.status(400).send("ERROR : " + err.message);
     }
   }
 );
