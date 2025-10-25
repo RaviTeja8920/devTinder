@@ -17,7 +17,9 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
     if (!validateUserEditData(req)) {
-      throw new Error("invalid Data");
+      return res
+        .status(400)
+        .send("something went wrong while validating the data");
     }
 
     const loggedInUser = req.user;

@@ -3,7 +3,7 @@ const validator = require("validator");
 const validateSignUpData = (req) => {
   const { firstName, email, password, age } = req.body;
 
-  if (!firstName || !email || !password || !age) {
+  if (!firstName || !email || !password) {
     throw new Error(
       "Enter all required fields firstName, email, password and age"
     );
@@ -22,10 +22,6 @@ const validateSignUpData = (req) => {
   if (!validator.isStrongPassword(password)) {
     throw new Error("Need strong password");
   }
-
-  if (!validator.isNumeric(age)) {
-    throw new Error("Need valid Age in numerics");
-  }
 };
 
 const validateUserEditData = (req) => {
@@ -34,6 +30,7 @@ const validateUserEditData = (req) => {
     "lastName",
     "email",
     "age",
+    "gender",
     "photoUrl",
     "about",
     "skills",
